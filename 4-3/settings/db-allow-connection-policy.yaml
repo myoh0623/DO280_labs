@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-allow-connection
+  namespace: backend
+spec:
+  podSelector:
+    matchLabels:
+      network.openshift.io/policy-group: backend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          team: security
+      podSelector:
+        matchLabels:
+          deployment: psql
+    ports:
+    - protocol: TCP
+      port: 3306

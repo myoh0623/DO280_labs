@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: frontend
+  labels:
+    team: security
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: psql-client
+  namespace: frontend
+  labels:
+    app: psql-client
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: psql-client
+  template:
+    metadata:
+      labels:
+        app: psql-client
+        deployment: psql
+    spec:
+      containers:
+      - name: mysql-client
+        image: registry.access.redhat.com/rhscl/mysql-57-rhel7:latest
+        command: 
+        - /bin/bash
+        - -c
+        - |
+          while true; do
+            echo "$(date): Attempting to connect to MySQL in backend namespace..."
+            mysql -h mysql.backend.svc.cluster.local -u dbuser -pdbpass123 -e "SELECT 1;" 2>&1
+            if [ $? -eq 0 ]; then
+              echo "$(date): Successfully connected to MySQL service!"
+            else
+              echo "$(date): ERROR - Unable to connect to MySQL service in the backend namespace"
+            fi
+            sleep 30
+          done

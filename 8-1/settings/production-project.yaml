@@ -1,0 +1,32 @@
+---
+# Production 프로젝트 생성
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    team: production
+---
+# 기본 Deployment (restricted SCC 사용 - 실패 예정)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: root-app
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: root-app
+  template:
+    metadata:
+      labels:
+        app: root-app
+    spec:
+      containers:
+      - name: nginx
+        image: registry.access.redhat.com/ubi8/ubi:8.8
+        command: ["/bin/bash"]
+        args: ["-c", "while true; do echo 'Running as UID: '$(id -u); sleep 10; done"]
+        securityContext:
+          runAsUser: 0  # Root 사용자로 실행 시도 (기본 SCC에서 실패)

@@ -1,0 +1,36 @@
+---
+# Root 권한이 필요한 애플리케이션 Deployment
+# redhat-sa ServiceAccount를 사용하여 anyuid SCC 적용
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: privileged-app
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: privileged-app
+  template:
+    metadata:
+      labels:
+        app: privileged-app
+    spec:
+      serviceAccountName: redhat-sa  # anyuid SCC를 가진 ServiceAccount
+      containers:
+      - name: nginx
+        image: registry.access.redhat.com/ubi8/ubi:8.8
+        command: ["/bin/bash"]
+        args: 
+        - "-c"
+        - |
+          echo "=== System Information ==="
+          echo "Running as UID: $(id -u)"
+          echo "Running as User: $(whoami)"
+          echo "Groups: $(id -G)"
+          echo "=========================="
+          while true; do 
+            sleep 30
+          done
+        securityContext:
+          runAsUser: 0  # Root로 실행

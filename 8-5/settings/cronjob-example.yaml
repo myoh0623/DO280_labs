@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scheduler
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trigger-sa
+  namespace: scheduler
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-runner
+  namespace: scheduler
+spec:
+  schedule: "5 4 2 * *"  # 매월 2일 04:05 AM
+  successfulJobsHistoryLimit: 14
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: trigger-sa
+          containers:
+          - name: job-runner
+            image: registry.access.redhat.com/ubi8/ubi:8.8
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "CronJob executed at $(date)"
+              echo "Hostname: $(hostname)"
+              echo "Red Hat UBI version:"
+              cat /etc/redhat-release
+              echo "Job completed successfully"
+          restartPolicy: OnFailure

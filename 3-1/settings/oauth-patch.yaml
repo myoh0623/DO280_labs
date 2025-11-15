@@ -1,0 +1,8 @@
+spec:
+  identityProviders:
+  - name: do280-htpasswd
+    mappingMethod: claim
+    type: HTPasswd
+    htpasswd:
+      fileData:
+        name: do280-idp-secret

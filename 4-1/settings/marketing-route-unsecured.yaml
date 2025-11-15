@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: marketing-route
+  namespace: business
+  labels:
+    app: marketing
+spec:
+  host: webapp.apps.ocp4.example.com
+  to:
+    kind: Service
+    name: marketing-svc
+    weight: 100
+  port:
+    targetPort: http
+  wildcardPolicy: None

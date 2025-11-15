@@ -1,0 +1,25 @@
+---
+# Container Level LimitRange
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: bluebook-limits
+  namespace: bluebook
+spec:
+  limits:
+  # Container level constraints
+  - type: Container
+    min:
+      memory: "50Mi"
+    max:
+      memory: "250Mi"
+    defaultRequest:
+      memory: "100Mi"
+    default:
+      memory: "250Mi"
+  # Pod level constraints
+  - type: Pod
+    min:
+      cpu: "50m"
+    max:
+      cpu: "250m"

@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketing
+  namespace: business
+  labels:
+    app: marketing
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: marketing
+  template:
+    metadata:
+      labels:
+        app: marketing
+    spec:
+      containers:
+      - name: httpd
+        image: registry.access.redhat.com/ubi8/httpd-24:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: html-content
+          mountPath: /var/www/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: marketing-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: marketing-html
+  namespace: business
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Marketing Application</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            .container {
+                text-align: center;
+                padding: 40px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                backdrop-filter: blur(4px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+            }
+            h1 {
+                font-size: 3em;
+                margin-bottom: 20px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            p {
+                font-size: 1.2em;
+                margin: 10px 0;
+            }
+            .status {
+                margin-top: 30px;
+                padding: 20px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+            }
+            .warning {
+                color: #ffeb3b;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Marketing Application</h1>
+            <p>Welcome to the Business Marketing Portal</p>
+            <div class="status">
+                <p class="warning">⚠️ Connection Status: UNSECURED</p>
+                <p>This application needs TLS/SSL protection</p>
+            </div>
+            <p style="margin-top: 30px;">Hostname: <span id="hostname"></span></p>
+            <p>Protocol: <span id="protocol"></span></p>
+        </div>
+        <script>
+            document.getElementById('hostname').textContent = window.location.hostname;
+            document.getElementById('protocol').textContent = window.location.protocol;
+        </script>
+    </body>
+    </html>

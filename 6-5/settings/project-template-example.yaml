@@ -1,0 +1,56 @@
+---
+# Project Template 예제
+# 이 템플릿을 openshift-config 네임스페이스에 생성하고
+# projects.config.openshift.io/cluster 리소스에서 참조해야 함
+
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: project-request
+  namespace: openshift-config
+objects:
+- apiVersion: project.openshift.io/v1
+  kind: Project
+  metadata:
+    name: ${PROJECT_NAME}
+    annotations:
+      openshift.io/description: ${PROJECT_DESCRIPTION}
+      openshift.io/display-name: ${PROJECT_DISPLAYNAME}
+      openshift.io/requester: ${PROJECT_REQUESTING_USER}
+  spec: {}
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: admin
+    namespace: ${PROJECT_NAME}
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: admin
+  subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: ${PROJECT_ADMIN_USER}
+# 여기에 LimitRange 추가
+- apiVersion: v1
+  kind: LimitRange
+  metadata:
+    name: ${PROJECT_NAME}-limits
+    namespace: ${PROJECT_NAME}
+  spec:
+    limits:
+    - type: Container
+      min:
+        memory: "128Mi"
+      max:
+        memory: "256Mi"
+      default:
+        memory: "256Mi"
+      defaultRequest:
+        memory: "256Mi"
+parameters:
+- name: PROJECT_NAME
+- name: PROJECT_DISPLAYNAME
+- name: PROJECT_DESCRIPTION
+- name: PROJECT_ADMIN_USER
+- name: PROJECT_REQUESTING_USER

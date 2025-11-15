@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: backend
+  labels:
+    network: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: backend
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+        network.openshift.io/policy-group: backend
+    spec:
+      containers:
+      - name: mysql
+        image: registry.access.redhat.com/rhscl/mysql-57-rhel7:latest
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "redhat123"
+        - name: MYSQL_DATABASE
+          value: "testdb"
+        - name: MYSQL_USER
+          value: "dbuser"
+        - name: MYSQL_PASSWORD
+          value: "dbpass123"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: backend
+  labels:
+    app: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+  - name: mysql
+    port: 3306
+    targetPort: 3306
+    protocol: TCP
+  type: ClusterIP
