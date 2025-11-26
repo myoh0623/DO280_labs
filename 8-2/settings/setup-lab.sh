@@ -23,13 +23,16 @@ else
 fi
 
 # anyuid SCC 부여 확인
-if oc get rolebinding system:openshift:scc:anyuid -n production &>/dev/null; then
+# anyuid SCC 부여 확인 (RoleBinding 이름이 달라도 통과)
+if oc get rolebinding -n production -o jsonpath='{range .items[*]}{.roleRef.kind}{" "}{.roleRef.name}{" "}{range .subjects[*]}{.kind}{" "}{.namespace}{" "}{.name}{"\n"}{end}{end}' \
+  | grep -qE '^ClusterRole system:openshift:scc:anyuid .*ServiceAccount production redhat-sa$'; then
     echo "✓ anyuid SCC가 redhat-sa에 부여되어 있습니다."
 else
     echo "⚠ anyuid SCC가 redhat-sa에 부여되지 않았습니다."
-    echo "  8-1 실습을 먼저 완료하세요."
+    echo "  (production 네임스페이스 RoleBinding에서 system:openshift:scc:anyuid ↔ redhat-sa 연결이 없음)"
     exit 1
 fi
+
 
 echo ""
 echo "📦 문제가 있는 애플리케이션 배포 중..."
